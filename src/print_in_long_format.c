@@ -10,31 +10,27 @@ static int	num_len(int n)
 	return len;
 }
 
+static int	max(int a, int b)
+{
+	return (a > b ? a : b);
+}
+
 static void	get_paddings_and_total(t_lformat *l, t_path *p, int p_size, t_flags *f)
 {
 	int size_max = 0;
 	int links_max = 0;
-	l->total = 0;
-	l->name_padding = 0;
-	l->group_padding = 0;
 	for (int i = 0; i < p_size; i++)
 	{
 		struct stat stat_buf;
 		lstat(p[i].path, &stat_buf);
-		if (stat_buf.st_nlink > links_max)
-			links_max = stat_buf.st_nlink;
-		if (stat_buf.st_size > size_max)
-			size_max = stat_buf.st_size;
+		links_max = max(stat_buf.st_nlink, links_max);
+		size_max = max(stat_buf.st_size, size_max);
 
 		struct passwd *pw = getpwuid(stat_buf.st_uid);
-		int tmp = strlen(pw->pw_name) + 1;
-		if (tmp > l->name_padding)
-			l->name_padding = tmp;
-
+		l->name_padding = max(strlen(pw->pw_name) + 1, l->name_padding);
 		struct group  *gr = getgrgid(stat_buf.st_gid);
-		tmp = strlen(gr->gr_name) + 1;
-		if (tmp > l->group_padding)
-			l->group_padding = tmp;
+		l->group_padding = max(strlen(gr->gr_name) + 1, l->group_padding);
+
 		l->total += stat_buf.st_blocks;
 	}
 	l->links_padding = num_len(links_max) + 1;
@@ -113,6 +109,7 @@ static void	print_last_access_or_mod_time(time_t change_time)
 void		print_in_long_format(t_path *p, int p_size, t_flags *f)
 {
 	t_lformat l;
+	memset(&l, 0, sizeof(l));
 	get_paddings_and_total(&l, p, p_size, f);
 
 	if (f->d_flag == false && f->type == DIRECTORY)
