@@ -27,7 +27,6 @@ void	process_arguments(char **args, int arg_num, t_flags *f)
 	int p_size = 0;
 	char *err_files[arg_num];
 	int err_size = 0;
-	int dir_count = 0;
 	for (int i = 0; i < arg_num; i++)
 	{
 		struct stat stat_buf;
@@ -41,8 +40,6 @@ void	process_arguments(char **args, int arg_num, t_flags *f)
 		p[p_size].name = args[i];
 		p[p_size].name_size = strlen(args[i]);
 		p[p_size].st_mode = stat_buf.st_mode;
-		if (S_ISDIR(p[p_size].st_mode))
-			dir_count++;
 		add_sorting_priority(p + p_size, &stat_buf, f);
 		p_size++;
 	}
@@ -64,6 +61,5 @@ int		main(int argc, char **argv)
 	}
 	else
 		process_arguments(argv + arg_idx, argc - arg_idx, &f);
-	// system("leaks ft_ls");
 	return 0;
 }
